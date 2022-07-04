@@ -66,6 +66,12 @@ public class TFAuto extends LinearOpMode {
      *  FreightFrenzy_BC.tflite  0: Ball,  1: Cube
      *  FreightFrenzy_DM.tflite  0: Duck,  1: Marker
      */
+    private int duckPosition; //0 = left, 1=middle, 2=right
+    /*
+    Left: left: 52, right:128
+    Middle: left: 289, right: 357
+    Right: left: 514, right: 586
+     */
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
             "Ball",
@@ -154,9 +160,21 @@ public class TFAuto extends LinearOpMode {
                                     recognition.getLeft(), recognition.getTop());
                             telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                                     recognition.getRight(), recognition.getBottom());
-
+                            duckPosition = -1;
+                            if(recognition.getLabel().equals("Duck")) {
+                                if(recognition.getLeft() > 0 && recognition.getLeft() < 170) {
+                                    duckPosition = 1;
+                                }
+                                else if(recognition.getLeft() >= 170 && recognition.getLeft() <= 401) {
+                                    duckPosition = 2;
+                                }
+                                else if(recognition.getLeft() >= 401 ) {
+                                    duckPosition = 3;
+                                }
+                            }
                             i++;
                         }
+                        telemetry.addData("Duck position", duckPosition);
                         telemetry.update();
                     }
                 }
