@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,6 +23,7 @@ public class FF_TeleOp extends LinearOpMode{
     DcMotor flywheelL;
     DcMotor flywheelR;
     Servo slideServo;
+    BNO055IMU imu;
 
     //Basic Mecanum drive for joysticks
     @Override
