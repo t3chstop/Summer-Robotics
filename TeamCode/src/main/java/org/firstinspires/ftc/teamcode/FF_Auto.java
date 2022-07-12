@@ -23,17 +23,20 @@ public class FF_Auto extends LinearOpMode {
         distanceSensor = hardwareMap.get(DistanceSensor.class, "colorsensor");
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Trajectory myTrajectory = drive.trajectoryBuilder(new Pose2d())
-                .forward(40)
-                .splineTo(new Vector2d(56, -20), Math.toRadians(-90))
-                .build();
-        Trajectory myTrajectory2 = drive.trajectoryBuilder(new Pose2d())
-                .splineTo(new Vector2d(40, 0), Math.toRadians(90
 
-                ))
-                .back(40)
+        drive.setPoseEstimate(new Pose2d(-40, -63, 0));
+
+        Trajectory phase1 = drive.trajectoryBuilder(new Pose2d(-40, -63, 0))
+                .splineTo(new Vector2d(-10, -40), Math.toRadians(90))
                 .build();
 
+        Trajectory phase2 = drive.trajectoryBuilder(new Pose2d(-10, -40, Math.toRadians(90)), true)
+                .splineTo(new Vector2d(20, -63), Math.toRadians(0))
+                .build();
+
+        Trajectory phase3 = drive.trajectoryBuilder(new Pose2d(20, -63, Math.toRadians(180)))
+                .splineTo(new Vector2d(-10, -40), Math.toRadians(90))
+                .build();
 
         telemetry.addData("Initialized", "Press play to start");
         telemetry.update();
@@ -42,13 +45,20 @@ public class FF_Auto extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                //drive.followTrajectory(myTrajectory);
+                drive.followTrajectory(phase1);
                 sleep(4000);
-                drive.followTrajectory(myTrajectory2);
+                drive.followTrajectory(phase2);
+                sleep(4000);
+                drive.followTrajectory(phase3);
+                sleep(4000);
+                drive.followTrajectory(phase2);
+                sleep(4000);
+                drive.followTrajectory(phase3);
+                sleep(4000);
+                drive.followTrajectory(phase2);
+                sleep(4000);
+                drive.followTrajectory(phase3);
                 sleep(30000);
-//                telemetry.addData("Distance (cm)",
-//                        String.format(Locale.US, "%.02f", distanceSensor.getDistance(DistanceUnit.CM)));
-//                telemetry.update();
             }
         }
     }
