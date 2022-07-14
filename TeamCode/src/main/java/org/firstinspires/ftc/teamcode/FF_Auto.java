@@ -109,7 +109,7 @@ public class FF_Auto extends LinearOpMode {
         drive.setPoseEstimate(new Pose2d(-40, -63, 0));
 
         Trajectory phase1 = drive.trajectoryBuilder(new Pose2d(-40, -63, 0))
-                .splineTo(new Vector2d(-10, -40), Math.toRadians(90))
+                .splineTo(new Vector2d(-13, -38), Math.toRadians(90))
                 .build();
 
         Trajectory phase2 = drive.trajectoryBuilder(new Pose2d(-10, -40, Math.toRadians(90)), true)
@@ -118,6 +118,14 @@ public class FF_Auto extends LinearOpMode {
 
         Trajectory phase3 = drive.trajectoryBuilder(new Pose2d(20, -63, Math.toRadians(180)))
                 .splineTo(new Vector2d(-10, -40), Math.toRadians(90))
+                .build();
+
+        Trajectory back5 = drive.trajectoryBuilder(new Pose2d(-13, -38, Math.toRadians(90)))
+                .back(5)
+                .build();
+
+        Trajectory forward5 = drive.trajectoryBuilder(new Pose2d(-13, -38, Math.toRadians(90)))
+                .forward(5)
                 .build();
 
         slideServo.setPosition(0.02);
@@ -129,6 +137,8 @@ public class FF_Auto extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
+
+                //Find position of duck
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
@@ -162,22 +172,79 @@ public class FF_Auto extends LinearOpMode {
                     }
                 }
 
+                //Create thread for each task to run them at the same time
+                Thread thread1 = new Thread() {
+                    public void run() {
+                        drive.followTrajectory(phase1);
+                    }
+                };
 
-                drive.followTrajectory(phase1);
+                //Create thread for each task to run them at the same time
+                Thread thread2 = new Thread() {
+                    public void run() {
+                        liftAndTilt();
+                    }
+                };
 
-                if (duckPosition==1) {
+                thread1.start();
+                thread2.start();
 
+                // Wait for them both to finish
+                try {
+                    thread1.join();
+                    thread2.join();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
-                sleep(4000);
-                drive.followTrajectory(phase2);
-                sleep(4000);
-                drive.followTrajectory(phase3);
-                sleep(4000);
-                drive.followTrajectory(phase2);
-                sleep(4000);
-                drive.followTrajectory(phase3);
-                sleep(4000);
+                //Resume synchronous execution
+                sleep(1000);
+                //Drop off into correct zone
+                if (duckPosition==1) {
+                    drive.followTrajectory(back5);
+                    slide.setTargetPosition(800);
+                    slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    slide.setPower(-0.75);
+                    while (slide.isBusy()) {
+                        continue;
+                    }
+                    slide.setPower(0);
+
+                    //Fire
+                    slideServo.setPosition(0.85);
+                    sleep(3000);
+
+                    //Return slide
+                    liftAndTilt();
+                    sleep(1000);
+                    homeSlide();
+                } else if (duckPosition==2) {
+                    //Lower slide
+                    slide.setTargetPosition(1200);
+                    slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    slide.setPower(-0.75);
+                    while (slide.isBusy()) {
+                        continue;
+                    }
+                    slide.setPower(0);
+
+                    //Fire
+                    slideServo.setPosition(0.85);
+                    sleep(3000);
+
+                    //Return slide
+                    liftAndTilt();
+                    sleep(1000);
+                    homeSlide();
+                } else {
+                    slideServo.setPosition(0.85);
+                    sleep(3000);
+                    slideServo.setPosition(0.6);
+                    sleep(1000);
+                    homeSlide();
+                }
+
+                sleep(2000);
                 drive.followTrajectory(phase2);
                 sleep(4000);
                 drive.followTrajectory(phase3);
